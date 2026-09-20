@@ -7,10 +7,10 @@ export default function RegisterPage() {
   const router = useRouter();
 
   const [name, setName] = useState('');
+  const [businessName, setBusinessName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [passwordConfirmation, setPasswordConfirmation] =
-    useState('');
+  const [passwordConfirmation, setPasswordConfirmation] = useState('');
 
   const [showPassword, setShowPassword] = useState(false);
   const [showPasswordConfirmation, setShowPasswordConfirmation] =
@@ -22,14 +22,20 @@ export default function RegisterPage() {
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
+    setLoading(true);
     setError('');
 
-    if (password !== passwordConfirmation) {
-      setError('Passwords do not match.');
+    if (password.length < 8) {
+      setError('Password must be at least 8 characters long.');
+      setLoading(false);
       return;
     }
 
-    setLoading(true);
+    if (password !== passwordConfirmation) {
+      setError('Passwords do not match.');
+      setLoading(false);
+      return;
+    }
 
     try {
       const response = await fetch('/api/auth/register', {
@@ -40,6 +46,7 @@ export default function RegisterPage() {
         },
         body: JSON.stringify({
           name,
+          business_name: businessName,
           email,
           password,
           password_confirmation: passwordConfirmation,
@@ -52,22 +59,23 @@ export default function RegisterPage() {
         if (data.errors) {
           const firstError = Object.values(data.errors)
             .flat()
-            .find(
-              (message): message is string =>
-                typeof message === 'string'
-            );
+            .find((message) => typeof message === 'string');
 
           setError(
-            firstError || data.message || 'Unable to create account.'
+            typeof firstError === 'string'
+              ? firstError
+              : data.message || 'Registration failed.'
           );
         } else {
-          setError(data.message || 'Unable to create account.');
+          setError(data.message || 'Registration failed.');
         }
 
         return;
       }
 
-      router.replace('/login');
+      router.replace(
+        `/verify-email?email=${encodeURIComponent(email)}`
+      );
     } catch {
       setError(
         'Unable to connect to the server. Please try again.'
@@ -110,12 +118,13 @@ export default function RegisterPage() {
               </div>
 
               <h2 className="text-3xl font-semibold leading-tight tracking-tight text-white xl:text-4xl">
-                Start managing your inventory today.
+                Build your inventory workspace.
               </h2>
 
               <p className="mt-5 text-sm leading-6 text-slate-400">
-                Create an account to manage products, monitor stock,
-                organize categories, and keep your inventory under control.
+                Create your account and get a centralized workspace
+                for managing products, stock levels, categories, and
+                your business inventory.
               </p>
 
               <div className="mt-8 grid grid-cols-3 gap-3">
@@ -164,7 +173,7 @@ export default function RegisterPage() {
           <div className="w-full max-w-[420px]">
 
             {/* Mobile brand */}
-            <div className="mb-8 lg:hidden">
+            <div className="mb-10 lg:hidden">
               <div className="flex items-center gap-3">
                 <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-600 text-sm font-bold text-white shadow-sm">
                   I
@@ -193,7 +202,8 @@ export default function RegisterPage() {
               </h1>
 
               <p className="mt-2 text-sm leading-6 text-slate-500">
-                Create an account to access the inventory dashboard.
+                Set up your business workspace and start managing your
+                inventory.
               </p>
             </div>
 
@@ -214,7 +224,7 @@ export default function RegisterPage() {
               onSubmit={handleSubmit}
               className="space-y-5"
             >
-              {/* Name */}
+              {/* Full name */}
               <div>
                 <label
                   htmlFor="name"
@@ -232,8 +242,33 @@ export default function RegisterPage() {
                     setName(event.target.value)
                   }
                   autoComplete="name"
+                  autoFocus
                   required
-                  placeholder="Your name"
+                  placeholder="John Doe"
+                  className="h-12 block w-full rounded-lg border border-slate-200 bg-white px-4 text-sm text-slate-950 shadow-sm outline-none transition placeholder:text-slate-400 hover:border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                />
+              </div>
+
+              {/* Business name */}
+              <div>
+                <label
+                  htmlFor="businessName"
+                  className="mb-2 block text-sm font-medium text-slate-700"
+                >
+                  Business name
+                </label>
+
+                <input
+                  id="businessName"
+                  name="businessName"
+                  type="text"
+                  value={businessName}
+                  onChange={(event) =>
+                    setBusinessName(event.target.value)
+                  }
+                  autoComplete="organization"
+                  required
+                  placeholder="Acme Store"
                   className="h-12 block w-full rounded-lg border border-slate-200 bg-white px-4 text-sm text-slate-950 shadow-sm outline-none transition placeholder:text-slate-400 hover:border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
                 />
               </div>
@@ -282,7 +317,8 @@ export default function RegisterPage() {
                     }
                     autoComplete="new-password"
                     required
-                    placeholder="Create a password"
+                    minLength={8}
+                    placeholder="At least 8 characters"
                     className="h-12 block w-full rounded-lg border border-slate-200 bg-white px-4 pr-20 text-sm text-slate-950 shadow-sm outline-none transition placeholder:text-slate-400 hover:border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
                   />
 
@@ -301,12 +337,16 @@ export default function RegisterPage() {
                     {showPassword ? 'Hide' : 'Show'}
                   </button>
                 </div>
+
+                <p className="mt-2 text-xs text-slate-400">
+                  Use at least 8 characters.
+                </p>
               </div>
 
               {/* Confirm password */}
               <div>
                 <label
-                  htmlFor="password_confirmation"
+                  htmlFor="passwordConfirmation"
                   className="mb-2 block text-sm font-medium text-slate-700"
                 >
                   Confirm password
@@ -314,8 +354,8 @@ export default function RegisterPage() {
 
                 <div className="relative">
                   <input
-                    id="password_confirmation"
-                    name="password_confirmation"
+                    id="passwordConfirmation"
+                    name="passwordConfirmation"
                     type={
                       showPasswordConfirmation
                         ? 'text'
@@ -327,7 +367,8 @@ export default function RegisterPage() {
                     }
                     autoComplete="new-password"
                     required
-                    placeholder="Confirm your password"
+                    minLength={8}
+                    placeholder="Enter your password again"
                     className="h-12 block w-full rounded-lg border border-slate-200 bg-white px-4 pr-20 text-sm text-slate-950 shadow-sm outline-none transition placeholder:text-slate-400 hover:border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
                   />
 
@@ -348,6 +389,20 @@ export default function RegisterPage() {
                     {showPasswordConfirmation ? 'Hide' : 'Show'}
                   </button>
                 </div>
+
+                {passwordConfirmation &&
+                  password !== passwordConfirmation && (
+                    <p className="mt-2 text-xs text-red-600">
+                      Passwords do not match.
+                    </p>
+                  )}
+
+                {passwordConfirmation &&
+                  password === passwordConfirmation && (
+                    <p className="mt-2 text-xs text-emerald-600">
+                      Passwords match.
+                    </p>
+                  )}
               </div>
 
               {/* Submit */}
@@ -360,7 +415,7 @@ export default function RegisterPage() {
               </button>
             </form>
 
-            {/* Login link */}
+            {/* Login */}
             <div className="mt-8 border-t border-slate-200 pt-6 text-center">
               <p className="text-sm text-slate-500">
                 Already have an account?{' '}
@@ -380,3 +435,4 @@ export default function RegisterPage() {
     </main>
   );
 }
+
