@@ -56,22 +56,32 @@ export default function RegisterPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        if (data.errors) {
-          const firstError = Object.values(data.errors)
-            .flat()
-            .find((message) => typeof message === 'string');
+    if (data.email_verification_required) {
+      router.replace(
+        `/verify-email?email=${encodeURIComponent(
+          data.email || email
+        )}`
+      );
 
-          setError(
-            typeof firstError === 'string'
-              ? firstError
-              : data.message || 'Registration failed.'
-          );
-        } else {
-          setError(data.message || 'Registration failed.');
-        }
+      return;
+    }
 
-        return;
-      }
+    if (data.errors) {
+      const firstError = Object.values(data.errors)
+        .flat()
+        .find((message) => typeof message === 'string');
+
+      setError(
+        typeof firstError === 'string'
+          ? firstError
+          : data.message || 'Registration failed.'
+      );
+    } else {
+      setError(data.message || 'Registration failed.');
+    }
+
+    return;
+  }
 
       router.replace(
         `/verify-email?email=${encodeURIComponent(email)}`

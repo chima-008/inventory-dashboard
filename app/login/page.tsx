@@ -12,13 +12,21 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
 
   const [error, setError] = useState('');
+  const [verificationMessage, setVerificationMessage] = useState('');
+  const [verificationRequired, setVerificationRequired] =
+    useState(false);
+  const [resending, setResending] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(
+    event: FormEvent<HTMLFormElement>
+  ) {
     event.preventDefault();
 
     setLoading(true);
     setError('');
+    setVerificationMessage('');
+    setVerificationRequired(false);
 
     try {
       const response = await fetch('/api/auth/login', {
@@ -37,7 +45,18 @@ export default function LoginPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        setError(data.message || 'Invalid email or password.');
+        if (data.email_verification_required) {
+          setVerificationRequired(true);
+          setError(
+            data.message ||
+              'Please verify your email address before logging in.'
+          );
+        } else {
+          setError(
+            data.message || 'Invalid email or password.'
+          );
+        }
+
         return;
       }
 
@@ -49,6 +68,55 @@ export default function LoginPage() {
       );
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function handleResendVerification() {
+    if (!email) {
+      setError(
+        'Enter your email address before requesting a verification email.'
+      );
+      return;
+    }
+
+    setResending(true);
+    setError('');
+    setVerificationMessage('');
+
+    try {
+      const response = await fetch(
+        '/api/auth/verification-notification',
+        {
+          method: 'POST',
+          headers: {
+            Accept: 'application/json',
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ email }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setError(
+          data.message ||
+            'Unable to resend the verification email. Please try again.'
+        );
+        return;
+      }
+
+      setVerificationMessage(
+        data.message ||
+          'A new verification email has been sent. Please check your inbox.'
+      );
+      setVerificationRequired(false);
+    } catch {
+      setError(
+        'Unable to connect to the server. Please try again.'
+      );
+    } finally {
+      setResending(false);
     }
   }
 
@@ -176,11 +244,57 @@ export default function LoginPage() {
             {error && (
               <div
                 role="alert"
-                className="mb-6 rounded-lg border border-red-200 bg-red-50 px-4 py-3"
+                className={`mb-6 rounded-lg border px-4 py-3 ${
+                  verificationRequired
+                    ? 'border-amber-200 bg-amber-50'
+                    : 'border-red-200 bg-red-50'
+                }`}
               >
-                <p className="text-sm font-medium leading-5 text-red-700">
+                <p
+                  className={`text-sm font-medium leading-5 ${
+                    verificationRequired
+                      ? 'text-amber-700'
+                      : 'text-red-700'
+                  }`}
+                >
                   {error}
                 </p>
+
+                {verificationRequired && (
+                  <button
+                    type="button"
+                    onClick={handleResendVerification}
+                    disabled={resending}
+                    className="mt-3 text-sm font-semibold text-blue-600 transition hover:text-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    {resending
+                      ? 'Sending verification email...'
+                      : 'Resend verification email'}
+                  </button>
+                )}
+              </div>
+            )}
+
+            {verificationMessage && (
+              <div
+                role="status"
+                className="mb-6 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3"
+              >
+                <p className="text-sm font-medium leading-5 text-emerald-700">
+                  {verificationMessage}
+                </p>
+
+                <button
+                  type="button"
+                  onClick={() =>
+                    router.push(
+                      `/verify-email?email=${encodeURIComponent(email)}`
+                    )
+                  }
+                  className="mt-3 text-sm font-semibold text-blue-600 transition hover:text-blue-700"
+                >
+                  Go to verification page
+                </button>
               </div>
             )}
 
@@ -203,14 +317,17 @@ export default function LoginPage() {
                   name="email"
                   type="email"
                   value={email}
-                  onChange={(event) =>
-                    setEmail(event.target.value)
-                  }
+                  onChange={(event) => {
+                    setEmail(event.target.value);
+                    setVerificationRequired(false);
+                    setVerificationMessage('');
+                    setError('');
+                  }}
                   autoComplete="email"
                   autoFocus
                   required
                   placeholder="you@example.com"
-                  className="h-12 block w-full rounded-lg border border-slate-200 bg-white px-4 text-sm text-slate-950 shadow-sm outline-none transition placeholder:text-slate-400 hover:border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                  className="block h-12 w-full rounded-lg border border-slate-200 bg-white px-4 text-sm text-slate-950 shadow-sm outline-none transition placeholder:text-slate-400 hover:border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
                 />
               </div>
 
@@ -235,7 +352,7 @@ export default function LoginPage() {
                     autoComplete="current-password"
                     required
                     placeholder="Enter your password"
-                    className="h-12 block w-full rounded-lg border border-slate-200 bg-white px-4 pr-20 text-sm text-slate-950 shadow-sm outline-none transition placeholder:text-slate-400 hover:border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                    className="block h-12 w-full rounded-lg border border-slate-200 bg-white px-4 pr-20 text-sm text-slate-950 shadow-sm outline-none transition placeholder:text-slate-400 hover:border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
                   />
 
                   <button
