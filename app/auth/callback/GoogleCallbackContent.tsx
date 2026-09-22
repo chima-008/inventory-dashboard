@@ -3,6 +3,43 @@
 import { FormEvent, useEffect, useRef, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
+const SESSION_CHECK_ATTEMPTS = 5;
+const SESSION_CHECK_DELAY_MS = 300;
+
+async function waitForAuthenticatedSession(): Promise<boolean> {
+  for (let attempt = 0; attempt < SESSION_CHECK_ATTEMPTS; attempt++) {
+    try {
+      const response = await fetch('/api/user', {
+        method: 'GET',
+        headers: {
+          Accept: 'application/json',
+        },
+        cache: 'no-store',
+      });
+
+      if (response.ok) {
+        return true;
+      }
+
+      if (response.status === 401 || response.status === 403) {
+        await new Promise((resolve) =>
+          setTimeout(resolve, SESSION_CHECK_DELAY_MS)
+        );
+
+        continue;
+      }
+
+      return false;
+    } catch {
+      await new Promise((resolve) =>
+        setTimeout(resolve, SESSION_CHECK_DELAY_MS)
+      );
+    }
+  }
+
+  return false;
+}
+
 export default function GoogleCallbackContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -71,8 +108,17 @@ export default function GoogleCallbackContent() {
           return;
         }
 
+        const sessionReady =
+          await waitForAuthenticatedSession();
+
+        if (!sessionReady) {
+          setError(
+            'Google sign in succeeded, but your session could not be established. Please try again.'
+          );
+          return;
+        }
+
         router.replace('/dashboard');
-        router.refresh();
       } catch {
         setError(
           'Unable to complete Google sign in. Please try again.'
@@ -149,8 +195,18 @@ export default function GoogleCallbackContent() {
         return;
       }
 
+      const sessionReady =
+        await waitForAuthenticatedSession();
+
+      if (!sessionReady) {
+        setError(
+          'Your workspace was created, but your session could not be established. Please try signing in again.'
+        );
+        setIsSubmitting(false);
+        return;
+      }
+
       router.replace('/dashboard');
-      router.refresh();
     } catch {
       setError(
         'Unable to complete account setup. Please try again.'
