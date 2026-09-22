@@ -34,6 +34,14 @@ const administrationNavigation = [
   },
 ];
 
+const settingsNavigation = [
+  {
+    href: '/dashboard/settings',
+    label: 'Settings',
+    icon: '⚙',
+  },
+];
+
 export default function SideBarNavigation({
   mobile = false,
   isAdmin = false,
@@ -51,15 +59,19 @@ export default function SideBarNavigation({
     return pathname.startsWith(href);
   };
 
-  const items = isAdmin
-    ? [...navigation, ...administrationNavigation]
-    : navigation;
+  const items = [
+    ...navigation,
+    ...settingsNavigation,
+    ...(isAdmin ? administrationNavigation : []),
+  ];
 
   if (mobile) {
     return (
       <nav
         className={`grid ${
-          isAdmin ? 'grid-cols-5' : 'grid-cols-4'
+          items.length === 6
+            ? 'grid-cols-6'
+            : 'grid-cols-5'
         }`}
       >
         {items.map((item) => {
@@ -97,6 +109,40 @@ export default function SideBarNavigation({
 
       <nav className="mt-4 space-y-1">
         {navigation.map((item) => {
+          const active = isActive(item.href);
+
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={`group flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium transition ${
+                active
+                  ? 'bg-blue-600 text-white shadow-sm'
+                  : 'text-slate-400 hover:bg-slate-800 hover:text-white'
+              }`}
+            >
+              <span
+                className={`flex h-5 w-5 items-center justify-center text-base ${
+                  active
+                    ? 'text-white'
+                    : 'text-slate-500 group-hover:text-slate-300'
+                }`}
+              >
+                {item.icon}
+              </span>
+
+              <span>{item.label}</span>
+            </Link>
+          );
+        })}
+      </nav>
+
+      <p className="mt-8 px-3 text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+        Settings
+      </p>
+
+      <nav className="mt-4 space-y-1">
+        {settingsNavigation.map((item) => {
           const active = isActive(item.href);
 
           return (
