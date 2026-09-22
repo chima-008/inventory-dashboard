@@ -28,6 +28,20 @@ export async function POST(request: Request) {
       );
     }
 
+    const payload: {
+      code: string;
+      business_name?: string;
+    } = {
+      code: body.code,
+    };
+
+    if (
+      typeof body.business_name === 'string' &&
+      body.business_name.trim() !== ''
+    ) {
+      payload.business_name = body.business_name.trim();
+    }
+
     const response = await fetch(
       `${apiUrl}/auth/google/exchange`,
       {
@@ -36,9 +50,7 @@ export async function POST(request: Request) {
           Accept: 'application/json',
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          code: body.code,
-        }),
+        body: JSON.stringify(payload),
         cache: 'no-store',
       }
     );
@@ -58,15 +70,34 @@ export async function POST(request: Request) {
     }
 
     if (!response.ok) {
-      return NextResponse.json(data, {
-        status: response.status,
-      });
+      return NextResponse.json(
+        data,
+        {
+          status: response.status,
+        }
+      );
     }
 
     const responseData = data as {
       message?: string;
       token?: string;
+      requires_business_name?: boolean;
     };
+
+    /*
+    |--------------------------------------------------------------------------
+    | New Google user needs to choose a business name
+    |--------------------------------------------------------------------------
+    */
+
+    if (responseData.requires_business_name) {
+      return NextResponse.json({
+        message:
+          responseData.message ||
+          'Please provide your business name to continue.',
+        requires_business_name: true,
+      });
+    }
 
     if (!responseData.token) {
       return NextResponse.json(
@@ -97,12 +128,7 @@ export async function POST(request: Request) {
     });
 
     return nextResponse;
-  } catch (error) {
-    console.error(
-      'Google authentication exchange error:',
-      error
-    );
-
+  } catch {
     return NextResponse.json(
       {
         message:

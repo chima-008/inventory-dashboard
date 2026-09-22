@@ -8,6 +8,10 @@ export type AuthUser = {
   name: string;
   email: string;
   role: 'admin' | 'manager';
+  business: {
+    id: number;
+    name: string;
+  } | null;
 };
 
 export async function getCurrentUser(): Promise<AuthUser> {
@@ -37,7 +41,7 @@ export async function getCurrentUser(): Promise<AuthUser> {
     throw new Error('Failed to fetch authenticated user.');
   }
 
- const body = await response.json();
+  const body = await response.json();
 
   return body.data;
 }
