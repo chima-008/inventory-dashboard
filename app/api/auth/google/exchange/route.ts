@@ -86,16 +86,15 @@ export async function POST(request: Request) {
         'Google authentication successful.',
     });
 
-    nextResponse.cookies.set(
-      'inventory_token',
-      responseData.token,
-      {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
-        path: '/',
-      }
-    );
+    nextResponse.cookies.set({
+      name: 'inventory_token',
+      value: responseData.token,
+      httpOnly: true,
+      secure: true,
+      sameSite: 'lax',
+      path: '/',
+      maxAge: 60 * 60 * 24 * 30,
+    });
 
     return nextResponse;
   } catch (error) {
