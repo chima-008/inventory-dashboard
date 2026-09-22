@@ -17,6 +17,7 @@ export default function LoginPage() {
     useState(false);
   const [resending, setResending] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
 
   async function handleSubmit(
     event: FormEvent<HTMLFormElement>
@@ -118,6 +119,25 @@ export default function LoginPage() {
     } finally {
       setResending(false);
     }
+  }
+
+  function handleGoogleSignIn() {
+    setGoogleLoading(true);
+    setError('');
+    setVerificationMessage('');
+    setVerificationRequired(false);
+
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+
+    if (!apiUrl) {
+      setError(
+        'Google sign in is currently unavailable. Please try again later.'
+      );
+      setGoogleLoading(false);
+      return;
+    }
+
+    window.location.href = `${apiUrl}/auth/google`;
   }
 
   return (
@@ -275,6 +295,7 @@ export default function LoginPage() {
               </div>
             )}
 
+            {/* Verification success */}
             {verificationMessage && (
               <div
                 role="status"
@@ -297,6 +318,71 @@ export default function LoginPage() {
                 </button>
               </div>
             )}
+
+            {/* Google sign in */}
+            <div className="mb-6">
+              <button
+                type="button"
+                onClick={handleGoogleSignIn}
+                disabled={loading || googleLoading}
+                className="inline-flex h-12 w-full items-center justify-center gap-3 rounded-lg border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-slate-300 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {googleLoading ? (
+                  <>
+                    <span className="h-4 w-4 animate-spin rounded-full border-2 border-slate-300 border-t-blue-600" />
+
+                    <span>
+                      Connecting to Google...
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <svg
+                      aria-hidden="true"
+                      className="h-5 w-5"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M21.805 12.23c0-.79-.065-1.55-.207-2.28H12v4.31h5.51a4.7 4.7 0 0 1-2.045 3.083v2.564h3.31c1.938-1.784 3.03-4.414 3.03-7.677Z"
+                        fill="#4285F4"
+                      />
+
+                      <path
+                        d="M12 22c2.77 0 5.09-.917 6.785-2.493l-3.31-2.564c-.917.615-2.09.985-3.475.985-2.673 0-4.94-1.806-5.754-4.234H2.824v2.647A10.24 10.24 0 0 0 12 22Z"
+                        fill="#34A853"
+                      />
+
+                      <path
+                        d="M6.246 13.694A6.16 6.16 0 0 1 5.92 12c0-.588.1-1.16.326-1.694V7.659H2.824A10.04 10.04 0 0 0 1.75 12c0 1.397.335 2.718 1.074 4.341l3.422-2.647Z"
+                        fill="#FBBC05"
+                      />
+
+                      <path
+                        d="M12 6.072c1.508 0 2.862.518 3.927 1.53l2.945-2.946C17.085 2.996 14.765 2 12 2a10.24 10.24 0 0 0-9.176 5.659l3.422 2.647C7.06 7.878 9.327 6.072 12 6.072Z"
+                        fill="#EA4335"
+                      />
+                    </svg>
+
+                    <span>
+                      Continue with Google
+                    </span>
+                  </>
+                )}
+              </button>
+            </div>
+
+            {/* Divider */}
+            <div className="mb-6 flex items-center gap-4">
+              <div className="h-px flex-1 bg-slate-200" />
+
+              <span className="text-xs font-medium uppercase tracking-wide text-slate-400">
+                Or continue with email
+              </span>
+
+              <div className="h-px flex-1 bg-slate-200" />
+            </div>
 
             {/* Form */}
             <form
@@ -403,7 +489,7 @@ export default function LoginPage() {
               {/* Submit */}
               <button
                 type="submit"
-                disabled={loading}
+                disabled={loading || googleLoading}
                 className="inline-flex h-12 w-full items-center justify-center rounded-lg bg-blue-600 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {loading ? 'Signing in...' : 'Sign in'}
@@ -430,3 +516,4 @@ export default function LoginPage() {
     </main>
   );
 }
+
