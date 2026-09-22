@@ -6,8 +6,12 @@ export async function POST(request: Request) {
 
     if (!body.code) {
       return NextResponse.json(
-        { message: 'Authentication code is required.' },
-        { status: 422 }
+        {
+          message: 'Authentication code is required.',
+        },
+        {
+          status: 422,
+        }
       );
     }
 
@@ -15,8 +19,12 @@ export async function POST(request: Request) {
 
     if (!apiUrl) {
       return NextResponse.json(
-        { message: 'API configuration is missing.' },
-        { status: 500 }
+        {
+          message: 'API configuration is missing.',
+        },
+        {
+          status: 500,
+        }
       );
     }
 
@@ -43,12 +51,11 @@ export async function POST(request: Request) {
       data = JSON.parse(text);
     } catch {
       data = {
-        message: 'The inventory API returned an unexpected response.',
+        message:
+          response.statusText ||
+          'The inventory API returned an unexpected response.',
       };
     }
-
-    console.log('GOOGLE EXCHANGE STATUS:', response.status);
-    console.log('GOOGLE EXCHANGE RESPONSE:', data);
 
     if (!response.ok) {
       return NextResponse.json(data, {
@@ -64,9 +71,12 @@ export async function POST(request: Request) {
     if (!responseData.token) {
       return NextResponse.json(
         {
-          message: 'No authentication token was returned.',
+          message:
+            'Google authentication succeeded, but no authentication token was returned.',
         },
-        { status: 500 }
+        {
+          status: 500,
+        }
       );
     }
 
@@ -74,7 +84,6 @@ export async function POST(request: Request) {
       message:
         responseData.message ||
         'Google authentication successful.',
-      debug: true,
     });
 
     nextResponse.cookies.set({
@@ -89,13 +98,19 @@ export async function POST(request: Request) {
 
     return nextResponse;
   } catch (error) {
-    console.error('Google exchange error:', error);
+    console.error(
+      'Google authentication exchange error:',
+      error
+    );
 
     return NextResponse.json(
       {
-        message: 'Unable to complete Google authentication.',
+        message:
+          'Unable to complete Google authentication. Please try again.',
       },
-      { status: 500 }
+      {
+        status: 500,
+      }
     );
   }
 }
