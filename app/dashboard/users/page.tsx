@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation';
 import { apiFetch } from '@/lib/api';
 import { getCurrentUser } from '@/lib/auth';
 import UserRoleEditor from './UserRoleEditor';
+import InviteManager from './InviteManager';
 
 type User = {
   id: number;
@@ -109,6 +110,9 @@ export default async function UsersPage() {
           </p>
         </div>
       </section>
+
+      {/* Invite manager */}
+      <InviteManager />
 
       {/* Users table */}
       <section className="overflow-hidden rounded-xl border border-slate-200 bg-white">
