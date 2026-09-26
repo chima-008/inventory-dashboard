@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { cookies } from 'next/headers';
 
 export async function POST(request: Request) {
   try {
@@ -32,18 +33,26 @@ export async function POST(request: Request) {
       );
     }
 
-    const cookieHeader = request.headers.get('cookie');
+    const cookieStore = await cookies();
+    const token = cookieStore.get('inventory_token')?.value;
+
+    if (!token) {
+      return NextResponse.json(
+        {
+          message: 'Authentication is required.',
+        },
+        {
+          status: 401,
+        }
+      );
+    }
 
     const response = await fetch(`${apiUrl}/invitations`, {
       method: 'POST',
       headers: {
         Accept: 'application/json',
         'Content-Type': 'application/json',
-        ...(cookieHeader
-          ? {
-              Cookie: cookieHeader,
-            }
-          : {}),
+        Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({
         email: body.email.trim(),
