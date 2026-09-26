@@ -17,7 +17,13 @@ export async function POST(request: Request) {
 
     const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
+    console.log('[Google Exchange] API URL configured:', Boolean(apiUrl));
+
     if (!apiUrl) {
+      console.error(
+        '[Google Exchange] NEXT_PUBLIC_API_URL is missing.'
+      );
+
       return NextResponse.json(
         {
           message: 'API configuration is missing.',
@@ -27,6 +33,13 @@ export async function POST(request: Request) {
         }
       );
     }
+
+    const exchangeUrl = `${apiUrl}/auth/google/exchange`;
+
+    console.log(
+      '[Google Exchange] Starting API request:',
+      exchangeUrl
+    );
 
     const payload: {
       code: string;
@@ -42,9 +55,10 @@ export async function POST(request: Request) {
       payload.business_name = body.business_name.trim();
     }
 
-    const response = await fetch(
-      `${apiUrl}/auth/google/exchange`,
-      {
+    let response: Response;
+
+    try {
+      response = await fetch(exchangeUrl, {
         method: 'POST',
         headers: {
           Accept: 'application/json',
@@ -52,7 +66,36 @@ export async function POST(request: Request) {
         },
         body: JSON.stringify(payload),
         cache: 'no-store',
-      }
+      });
+    } catch (error) {
+      console.error(
+        '[Google Exchange] Fetch failed:',
+        error instanceof Error
+          ? {
+              name: error.name,
+              message: error.message,
+              cause:
+                error.cause instanceof Error
+                  ? error.cause.message
+                  : error.cause,
+            }
+          : error
+      );
+
+      return NextResponse.json(
+        {
+          message:
+            'Unable to connect to the inventory API.',
+        },
+        {
+          status: 502,
+        }
+      );
+    }
+
+    console.log(
+      '[Google Exchange] API response status:',
+      response.status
     );
 
     const text = await response.text();
@@ -70,12 +113,21 @@ export async function POST(request: Request) {
     }
 
     if (!response.ok) {
-      return NextResponse.json(
-        data,
+      console.error(
+        '[Google Exchange] Inventory API rejected request:',
         {
           status: response.status,
+          statusText: response.statusText,
+          response:
+            typeof data === 'object' && data !== null
+              ? data
+              : 'Non-JSON response',
         }
       );
+
+      return NextResponse.json(data, {
+        status: response.status,
+      });
     }
 
     const responseData = data as {
@@ -84,13 +136,11 @@ export async function POST(request: Request) {
       requires_business_name?: boolean;
     };
 
-    /*
-    |--------------------------------------------------------------------------
-    | New Google user needs to choose a business name
-    |--------------------------------------------------------------------------
-    */
-
     if (responseData.requires_business_name) {
+      console.log(
+        '[Google Exchange] Business name required for new Google user.'
+      );
+
       return NextResponse.json({
         message:
           responseData.message ||
@@ -100,6 +150,10 @@ export async function POST(request: Request) {
     }
 
     if (!responseData.token) {
+      console.error(
+        '[Google Exchange] API returned success without authentication token.'
+      );
+
       return NextResponse.json(
         {
           message:
@@ -110,6 +164,10 @@ export async function POST(request: Request) {
         }
       );
     }
+
+    console.log(
+      '[Google Exchange] Authentication successful. Setting session cookie.'
+    );
 
     const nextResponse = NextResponse.json({
       message:
@@ -128,7 +186,21 @@ export async function POST(request: Request) {
     });
 
     return nextResponse;
-  } catch {
+  } catch (error) {
+    console.error(
+      '[Google Exchange] Unexpected route error:',
+      error instanceof Error
+        ? {
+            name: error.name,
+            message: error.message,
+            cause:
+              error.cause instanceof Error
+                ? error.cause.message
+                : error.cause,
+          }
+        : error
+    );
+
     return NextResponse.json(
       {
         message:
