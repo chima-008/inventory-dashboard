@@ -7,7 +7,11 @@ const SESSION_CHECK_ATTEMPTS = 5;
 const SESSION_CHECK_DELAY_MS = 300;
 
 async function waitForAuthenticatedSession(): Promise<boolean> {
-  for (let attempt = 0; attempt < SESSION_CHECK_ATTEMPTS; attempt++) {
+  for (
+    let attempt = 0;
+    attempt < SESSION_CHECK_ATTEMPTS;
+    attempt++
+  ) {
     try {
       const response = await fetch('/api/user', {
         method: 'GET',
@@ -21,7 +25,10 @@ async function waitForAuthenticatedSession(): Promise<boolean> {
         return true;
       }
 
-      if (response.status === 401 || response.status === 403) {
+      if (
+        response.status === 401 ||
+        response.status === 403
+      ) {
         await new Promise((resolve) =>
           setTimeout(resolve, SESSION_CHECK_DELAY_MS)
         );
@@ -103,10 +110,43 @@ export default function GoogleCallbackContent() {
           return;
         }
 
+        /*
+        |--------------------------------------------------------------------------
+        | New Google account
+        |--------------------------------------------------------------------------
+        |
+        | The account has been created, but no application session
+        | was established. Send the user to login so they can sign
+        | in normally.
+        |
+        */
+
+        if (data.account_created && data.login_required) {
+          router.replace('/login?registered=true');
+          return;
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | New Google account: request business name
+        |--------------------------------------------------------------------------
+        */
+
         if (data.requires_business_name) {
           setRequiresBusinessName(true);
           return;
         }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Existing Google account
+        |--------------------------------------------------------------------------
+        |
+        | Existing users receive a Sanctum token from the backend.
+        | The login/session flow can therefore continue directly
+        | to the dashboard.
+        |
+        */
 
         const sessionReady =
           await waitForAuthenticatedSession();
@@ -187,6 +227,27 @@ export default function GoogleCallbackContent() {
         return;
       }
 
+      /*
+      |--------------------------------------------------------------------------
+      | New Google account created
+      |--------------------------------------------------------------------------
+      |
+      | The backend creates the business and user but intentionally
+      | does not create a Sanctum token. Send the user to login.
+      |
+      */
+
+      if (data.account_created && data.login_required) {
+        router.replace('/login?registered=true');
+        return;
+      }
+
+      /*
+      |--------------------------------------------------------------------------
+      | Defensive handling
+      |--------------------------------------------------------------------------
+      */
+
       if (data.requires_business_name) {
         setError(
           'Please enter your business name to continue.'
@@ -195,12 +256,24 @@ export default function GoogleCallbackContent() {
         return;
       }
 
+      /*
+      |--------------------------------------------------------------------------
+      | Existing account discovered during the exchange
+      |--------------------------------------------------------------------------
+      |
+      | In the unlikely case that the Google email became associated
+      | with an existing account between the callback and exchange,
+      | the backend may return a token. In that case, continue to
+      | the dashboard normally.
+      |
+      */
+
       const sessionReady =
         await waitForAuthenticatedSession();
 
       if (!sessionReady) {
         setError(
-          'Your workspace was created, but your session could not be established. Please try signing in again.'
+          'Your account was created, but your session could not be established. Please sign in again.'
         );
         setIsSubmitting(false);
         return;

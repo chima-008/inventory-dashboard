@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
 
 export async function POST(request: Request) {
   try {
@@ -76,8 +75,11 @@ export async function POST(request: Request) {
       );
     }
 
+    const normalizedApiUrl =
+      apiUrl.replace(/\/+$/, '');
+
     const response = await fetch(
-      `${apiUrl}/invitations/complete`,
+      `${normalizedApiUrl}/invitations/complete`,
       {
         method: 'POST',
         headers: {
@@ -97,7 +99,7 @@ export async function POST(request: Request) {
 
     const text = await response.text();
 
-    let data: any;
+    let data: unknown;
 
     try {
       data = JSON.parse(text);
@@ -107,28 +109,6 @@ export async function POST(request: Request) {
           response.statusText ||
           'The inventory API returned an unexpected response.',
       };
-    }
-
-    if (!response.ok) {
-      return NextResponse.json(data, {
-        status: response.status,
-      });
-    }
-
-    if (data?.token) {
-      const cookieStore = await cookies();
-
-      cookieStore.set(
-        'inventory_token',
-        data.token,
-        {
-          httpOnly: true,
-          secure: process.env.NODE_ENV === 'production',
-          sameSite: 'lax',
-          path: '/',
-          maxAge: 60 * 60 * 24 * 7,
-        }
-      );
     }
 
     return NextResponse.json(data, {

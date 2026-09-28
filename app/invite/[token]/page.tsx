@@ -67,7 +67,21 @@ export default function InvitationPage() {
           return;
         }
 
-        setInvitation(data);
+        const invitationData =
+          data?.data || data;
+
+        setInvitation({
+          business_name:
+            invitationData?.business?.name ||
+            invitationData?.business_name ||
+            '',
+          email:
+            invitationData?.email || '',
+          role:
+            invitationData?.role || 'manager',
+          expires_at:
+            invitationData?.expires_at || '',
+        });
       } catch {
         setError(
           'Unable to load this invitation. Please try again.'
@@ -141,14 +155,31 @@ export default function InvitationPage() {
         return;
       }
 
-      if (data?.token) {
-  router.replace('/dashboard');
-  return;
-}
+      /*
+      |--------------------------------------------------------------------------
+      | New manager account created
+      |--------------------------------------------------------------------------
+      |
+      | The backend intentionally does not create an authentication
+      | token. Send the new manager to the normal login page.
+      |
+      */
 
-      setError(
-        'Your account was created, but we could not establish your session. Please try signing in.'
-      );
+      if (
+        data?.account_created &&
+        data?.login_required
+      ) {
+        router.replace('/login?registered=true');
+        return;
+      }
+
+      /*
+      |--------------------------------------------------------------------------
+      | Defensive fallback
+      |--------------------------------------------------------------------------
+      */
+
+      router.replace('/login?registered=true');
     } catch {
       setError(
         'Unable to connect to the server. Please try again.'
