@@ -1,161 +1,48 @@
-# Inventory Management Dashboard
+# Inventory Management Dashboard — Frontend
 
-A production-ready inventory management dashboard built with Next.js and TypeScript.
+A modern inventory management dashboard built with **Next.js, TypeScript, React, and Tailwind CSS**.
 
-The application provides the frontend interface for a Laravel-based inventory management API, allowing businesses to manage products, categories, stock movements, users, and inventory analytics from a centralized dashboard.
+The application provides the frontend interface for a Laravel-based inventory management API and allows authenticated users to manage products, categories, stock movements, users, and inventory information through a responsive business dashboard.
 
-> **Commercial project:** This repository is primarily intended to demonstrate the engineering work and capabilities of the application. Commercial deployment, customization, licensing, and redistribution are separate from this public project documentation.
+## Live Application
+
+**Production Frontend:** inventory-dashboard-sand-alpha.vercel.app
+
+**Production API:** inventory-api-utcf.onrender.com
+
+**Frontend Repository:** chima-008/inventory-dashboard
+
+**Backend Repository:** chima-008/inventory-project
 
 ---
 
 ## Overview
 
-The Inventory Management Dashboard is the frontend application for a full-stack inventory management platform.
+The Inventory Management Dashboard is the frontend application of a full-stack inventory management system.
 
-It connects to a Laravel REST API and provides authenticated users with a centralized workspace for managing business inventory.
+The application communicates with a separate Laravel REST API rather than connecting directly to the database.
 
-The dashboard is designed around:
+The system provides:
 
-* Business inventory management
-* Secure authentication
-* Role-based access
+* Dashboard overview
 * Product management
 * Category management
-* Stock management
-* Inventory analytics
-* Multi-business data isolation
-
----
-
-# Features
-
-## Authentication
-
-The application supports:
-
-* Email/password login
-* Account registration
-* Email verification
-* Verification email resend
-* Password recovery
-* Password reset
-* Google sign in
-* Logout
-* Protected dashboard routes
-* Authenticated API requests
-
-Authentication state is maintained through a secure HTTP-only authentication cookie.
-
----
-
-## Dashboard
-
-The dashboard provides an overview of the business inventory.
-
-Current metrics include:
-
-* Total products
-* Total categories
-* Total stock units
-* Low-stock items
-* Out-of-stock items
-* Inventory value
-* Stock health
-
-The dashboard retrieves live data from the Laravel API rather than relying on hard-coded values.
-
----
-
-## Product Management
-
-Authenticated users can manage products through the dashboard.
-
-Product functionality includes:
-
-* Product listing
-* Product creation
-* Product details
-* Product updates
-* Product deletion
-* Category assignment
-* SKU
-* Pricing
-* Stock quantity
-* Low-stock threshold
-* Active/inactive status
+* Stock movement management
+* Inventory statistics
 * Low-stock monitoring
+* Out-of-stock monitoring
+* Inventory valuation
+* User management
+* Role management
+* Authentication
+* Business/profile management
+* Responsive dashboard interface
 
 ---
 
-## Category Management
+## Tech Stack
 
-Users can manage inventory categories from the dashboard.
-
-Supported operations include:
-
-* Create category
-* View categories
-* Update category
-* Delete category
-
-Administrative operations are protected according to the user's role.
-
----
-
-## Stock Management
-
-The dashboard provides a dedicated stock management area.
-
-Users can:
-
-* View stock information
-* Record stock movements
-* Increase stock
-* Decrease stock
-* Review stock movement history
-* Monitor low-stock products
-
-Stock changes are persisted through the Laravel API.
-
----
-
-## User Management
-
-Administrative users can manage users within their business.
-
-The dashboard supports:
-
-* Viewing users
-* Viewing user roles
-* Updating user roles
-
-Role management is protected by the backend authorization layer.
-
----
-
-# User Experience
-
-The interface follows a modern SaaS dashboard design approach.
-
-The design system uses:
-
-* Slate-based neutral surfaces
-* Blue primary actions
-* Responsive layouts
-* Consistent form controls
-* Dashboard cards
-* Clear navigation
-* Responsive mobile layouts
-* Accessible focus states
-* Error and success feedback
-
-The authentication screens use the same visual language as the dashboard to provide a consistent product experience.
-
----
-
-# Technology Stack
-
-## Frontend
+### Frontend
 
 * Next.js 16
 * React
@@ -163,208 +50,249 @@ The authentication screens use the same visual language as the dashboard to prov
 * Tailwind CSS
 * Next.js App Router
 
-## Backend
+### Backend
 
-The frontend communicates with a separate:
+* Laravel 12
+* PHP 8.2+
+* Laravel Sanctum
+* PostgreSQL
 
-* Laravel 12 API
-* PostgreSQL database
-* Laravel Sanctum authentication
+### Deployment
 
-## Authentication Services
-
-* Google OAuth
-* Brevo transactional email
-
-## Deployment
-
-* Vercel
-* GitHub
+* Frontend: Vercel
+* Backend: Render
+* Database: PostgreSQL on Render
+* Source control: GitHub
 
 ---
 
-# Architecture
+## Application Architecture
 
-The application separates the frontend interface from the backend API.
-
-```text id="9c3v1z"
-                 ┌───────────────────────────┐
-                 │      Next.js Frontend     │
-                 │                           │
-                 │ Authentication            │
-                 │ Dashboard                 │
-                 │ Products                  │
-                 │ Categories                │
-                 │ Stock                     │
-                 │ Users                     │
-                 └─────────────┬─────────────┘
-                               │
-                               │ HTTPS / JSON
-                               ▼
-                 ┌───────────────────────────┐
-                 │       Laravel API         │
-                 │                           │
-                 │ Authentication            │
-                 │ Authorization             │
-                 │ Business Logic            │
-                 │ Inventory Data            │
-                 └─────────────┬─────────────┘
-                               │
-                               ▼
-                        ┌─────────────┐
-                        │ PostgreSQL  │
-                        └─────────────┘
+```text
+┌───────────────────────────────────┐
+│          Next.js Frontend         │
+│                                   │
+│  Dashboard                        │
+│  Products                         │
+│  Categories                       │
+│  Stock                            │
+│  Users                            │
+│  Authentication                   │
+└─────────────────┬─────────────────┘
+                  │
+                  │ HTTPS / REST API
+                  ▼
+┌───────────────────────────────────┐
+│           Laravel API             │
+│                                   │
+│  Authentication                   │
+│  Products                         │
+│  Categories                       │
+│  Stock Movements                  │
+│  Users / Roles                    │
+│  Invitations                      │
+│  Dashboard Summary                │
+│  Business / Profile               │
+└─────────────────┬─────────────────┘
+                  │
+                  │ Eloquent
+                  ▼
+┌───────────────────────────────────┐
+│       PostgreSQL Database         │
+│                                   │
+│  Users                            │
+│  Products                         │
+│  Categories                       │
+│  Stock Movements                  │
+│  Sessions / Application Data      │
+└───────────────────────────────────┘
 ```
 
 ---
 
-# Authentication Architecture
+# Features
 
-The frontend does not receive a long-lived authentication token directly through a Google redirect URL.
+## Dashboard
 
-Instead, Google authentication uses a short-lived OAuth handoff code.
+The dashboard provides a centralized overview of inventory activity.
 
-```text id="m9z1r4"
-User
- │
- ▼
-Next.js Login
- │
- ▼
-Laravel Google OAuth
- │
- ▼
-Google
- │
- ▼
-Laravel Callback
- │
- ▼
-Short-lived OAuth Code
- │
- ▼
-Next.js Callback Page
- │
- ▼
-Code Exchange
- │
- ▼
-HTTP-only inventory_token Cookie
- │
- ▼
-Dashboard
-```
+It displays:
 
-This keeps the final authentication token out of the browser URL.
+* Total products
+* Total categories
+* Total stock units
+* Low-stock products
+* Out-of-stock products
+* Inventory value
+* Stock health
+
+The dashboard retrieves its data from the Laravel API.
 
 ---
 
-# Route Protection
+## Product Management
 
-Authenticated dashboard pages use server-side authentication checks.
+Users can manage inventory products through the dashboard.
 
-The application retrieves the current authenticated user from the Laravel API before rendering protected dashboard content.
+Supported functionality includes:
 
-If authentication is missing or invalid, the user is redirected to the login page.
-
-This allows the dashboard to protect application routes without relying solely on client-side checks.
+* View products
+* Create products
+* View product details
+* Update products
+* Delete products
+* Assign categories
+* Set product prices
+* Set stock quantities
+* Set low-stock thresholds
+* Activate or deactivate products
 
 ---
 
-# API Communication
+## Category Management
 
-The frontend communicates with the Laravel API using HTTP requests.
+The dashboard supports:
 
-The API base URL is configured through:
+* Viewing categories
+* Creating categories
+* Viewing category information
+* Updating categories
+* Deleting categories
+* Associating products with categories
 
-```env id="g4wz3p"
-NEXT_PUBLIC_API_URL=
-```
+---
 
-Local development can use:
+## Stock Management
 
-```env id="z4q5w8"
+The stock section provides a way to record inventory changes.
+
+Users can:
+
+* View stock movements
+* Select products
+* Record stock changes
+* Specify quantities
+* Track stock movement history
+
+Stock persistence and business rules are handled by the Laravel backend.
+
+---
+
+## User Management
+
+Authorized users can:
+
+* View users
+* View assigned roles
+* Update user roles
+
+Role enforcement is performed by the backend.
+
+---
+
+## Authentication
+
+The application integrates with the Laravel authentication API.
+
+Authentication functionality includes:
+
+* Registration
+* Login
+* Authenticated dashboard access
+* Current-user retrieval
+* Email verification
+* Password recovery
+* Google authentication
+* Logout/session handling
+
+---
+
+# Environment Configuration
+
+The frontend requires an API URL pointing to the Laravel backend.
+
+### Local Development
+
+Create `.env.local`:
+
+```env
 NEXT_PUBLIC_API_URL=http://127.0.0.1:8000/api
 ```
 
-Production uses the deployed Laravel API.
+### Production
 
-The production API is:
+The deployed frontend uses the production Laravel API:
+
+```env
+NEXT_PUBLIC_API_URL=https://inventory-api-utcf.onrender.com/api
+```
+
+The production value should be configured through the Vercel project's environment-variable settings rather than hard-coded into source code.
+
+---
+
+# Local Development
+
+## Prerequisites
+
+Install:
+
+* Node.js
+* npm
+* Git
+* A running Laravel API
+
+Verify Node.js:
+
+```bash
+node -v
+```
+
+Verify npm:
+
+```bash
+npm -v
+```
+
+---
+
+## Installation
+
+Clone the repository:
+
+```bash
+git clone https://github.com/chima-008/inventory-dashboard.git
+```
+
+Move into the project:
+
+```bash
+cd inventory-dashboard
+```
+
+Install dependencies:
+
+```bash
+npm install
+```
+
+Create `.env.local`:
+
+```env
+NEXT_PUBLIC_API_URL=http://127.0.0.1:8000/api
+```
+
+Start the development server:
+
+```bash
+npm run dev
+```
+
+The frontend will normally be available at:
 
 ```text
-https://inventory-api-utcf.onrender.com/api
+http://localhost:3000
 ```
-
-The production frontend is deployed separately through Vercel.
-
----
-
-# API Proxy Routes
-
-Some authentication operations are handled through Next.js API routes.
-
-These include flows such as:
-
-* Registration
-* Email verification notification
-* Password reset
-* Google authentication code exchange
-
-The proxy layer allows the frontend to communicate with the backend while keeping the authentication cookie under the frontend application's domain.
-
----
-
-# Dashboard Structure
-
-The main application areas are organized around the dashboard.
-
-```text id="z7g9qp"
-Dashboard
-│
-├── Overview
-│
-├── Products
-│   └── Create Product
-│
-├── Categories
-│   └── Create Category
-│
-├── Stock
-│   └── Stock Movements
-│
-└── Users
-    └── Role Management
-```
-
----
-
-# Responsive Design
-
-The dashboard is designed to work across:
-
-* Desktop
-* Laptop
-* Tablet
-* Mobile
-
-Navigation and dashboard content adapt to smaller screen sizes while preserving the core inventory workflows.
-
----
-
-# Error Handling
-
-The frontend provides user-facing handling for common API failures including:
-
-* Invalid credentials
-* Unverified accounts
-* Expired verification flows
-* Invalid password reset tokens
-* Failed Google authentication
-* Unauthorized requests
-* API connectivity failures
-* Validation errors
-
-Errors are presented through the application's UI rather than exposing raw backend exceptions to users.
 
 ---
 
@@ -372,180 +300,376 @@ Errors are presented through the application's UI rather than exposing raw backe
 
 The frontend is deployed through Vercel.
 
-Architecture:
-
-```text id="9n7n4c"
-GitHub
-   │
-   ▼
-Vercel
-   │
-   ▼
-Next.js Inventory Dashboard
-   │
-   │ HTTPS
-   ▼
-Render
-   │
-   ▼
-Laravel Inventory API
-   │
-   ▼
-PostgreSQL
-```
-
-The production frontend and backend are deployed independently.
-
-This allows the API and frontend to be scaled, maintained, and deployed separately.
-
----
-
-# Development
-
-Install dependencies:
-
-```bash id="d8e1m2"
-npm install
-```
-
-Create the local environment file:
-
-```text id="f0h4wl"
-.env.local
-```
-
-Configure:
-
-```env id="c7v9b1"
-NEXT_PUBLIC_API_URL=http://127.0.0.1:8000/api
-```
-
-Start the development server:
-
-```bash id="n6z4p1"
-npm run dev
-```
-
-The application will normally be available at:
-
-```text id="1m6q3s"
-http://localhost:3000
-```
-
----
-
-# Production Build
-
-Create a production build with:
-
-```bash id="r2n8v6"
-npm run build
-```
-
-Start the production application with:
-
-```bash id="w5k3j9"
-npm run start
-```
-
----
-
-# Engineering Highlights
-
-This project demonstrates practical experience with:
-
-* Next.js App Router
-* React
-* TypeScript
-* Tailwind CSS
-* Server-side authentication
-* HTTP-only cookies
-* REST API integration
-* Authentication proxy routes
-* OAuth integration
-* Protected routes
-* Responsive dashboard design
-* API error handling
-* Production deployment
-* Frontend/backend separation
-
----
-
-# Production Application
-
-Frontend:
+Production architecture:
 
 ```text
-https://inventory-dashboard-sand-alpha.vercel.app/
+Vercel
+  │
+  │ HTTPS
+  ▼
+Laravel API on Render
+  │
+  ▼
+PostgreSQL on Render
 ```
 
-Backend API:
+The production API URL is configured through the frontend environment variables.
+
+Production frontend:
+
+```text
+https://inventory-dashboard-sand-alpha.vercel.app
+```
+
+Production API:
 
 ```text
 https://inventory-api-utcf.onrender.com/api
 ```
 
-Health check:
+---
+
+# API Integration
+
+The frontend communicates with the Laravel backend through REST endpoints.
+
+Major API resources include:
 
 ```text
-https://inventory-api-utcf.onrender.com/api/health
+Authentication
+Products
+Categories
+Stock Movements
+Users
+Invitations
+Dashboard Summary
+Business Profile
+User Profile
+```
+
+Example API operations include:
+
+```text
+GET    /api/products
+POST   /api/products
+PUT    /api/products/{product}
+DELETE /api/products/{product}
+
+GET    /api/categories
+POST   /api/categories
+PUT    /api/categories/{category}
+DELETE /api/categories/{category}
+
+GET    /api/products/{product}/stock-movements
+POST   /api/products/{product}/stock-movements
+
+GET    /api/dashboard/summary
+GET    /api/users
+PATCH  /api/users/{user}/role
+```
+
+The backend remains responsible for validation, persistence, and authorization.
+
+---
+
+# Authentication Flow
+
+```text
+User
+ │
+ ▼
+Next.js Login
+ │
+ ▼
+Laravel Authentication API
+ │
+ ├── Authentication successful
+ │
+ ▼
+Authenticated Dashboard
+ │
+ ├── Products
+ ├── Categories
+ ├── Stock
+ └── Users
+```
+
+Authentication failures are handled by the frontend and may redirect the user to the login page.
+
+---
+
+# Dashboard Data
+
+The dashboard consumes summary data from:
+
+```text
+GET /api/dashboard/summary
+```
+
+The API provides values including:
+
+```text
+total_products
+total_categories
+total_stock_units
+low_stock_count
+out_of_stock_count
+inventory_value
+```
+
+The frontend transforms these values into dashboard cards and stock-health information.
+
+---
+
+# Inventory Value
+
+The backend calculates inventory value from product stock and price.
+
+Conceptually:
+
+```text
+Inventory Value =
+Σ (Stock Quantity × Product Price)
+```
+
+The frontend displays the value returned by the API rather than calculating the database value independently.
+
+---
+
+# Project Structure
+
+```text
+inventory-dashboard/
+│
+├── app/
+│   ├── dashboard/
+│   │   ├── categories/
+│   │   ├── products/
+│   │   ├── stock/
+│   │   ├── users/
+│   │   ├── layout.tsx
+│   │   └── page.tsx
+│   │
+│   ├── login/
+│   │   └── page.tsx
+│   │
+│   └── ...
+│
+├── components/
+│
+├── lib/
+│   ├── auth.ts
+│   └── ...
+│
+├── public/
+│
+├── .env.local
+├── package.json
+├── tsconfig.json
+├── next.config.ts
+└── README.md
 ```
 
 ---
 
-# Project Status
+# Code Quality
 
-The application is deployed and the core inventory workflows are implemented.
+Run linting:
 
-### Completed
+```bash
+npm run lint
+```
 
-* Authentication UI
-* Registration
-* Email verification
-* Password reset
-* Google authentication
-* Login/logout
-* Protected dashboard
-* Inventory overview
-* Product management
-* Category management
-* Stock management
-* Stock movements
-* User management
-* Role management
-* Laravel API integration
-* Production deployment
+Create a production build:
 
-Backend automated test status:
+```bash
+npm run build
+```
 
-**84/84 tests passing.**
+Start the production build locally:
+
+```bash
+npm start
+```
+
+Before deployment, both linting and production build checks should pass.
 
 ---
 
-# Commercial Use
+# Testing Checklist
 
-This project is part of a professional development and portfolio project.
+## Authentication
 
-The repository documentation demonstrates the application's architecture and engineering capabilities.
+* [ ] Registration works
+* [ ] Login works
+* [ ] Invalid credentials are rejected
+* [ ] Protected routes require authentication
+* [ ] Logout works
+* [ ] Email verification flow works
+* [ ] Password recovery flow works
+* [ ] Google authentication works
 
-Commercial versions may include:
+## Dashboard
 
-* Private deployment
-* Business-specific branding
-* Custom workflows
-* Additional features
-* Third-party integrations
-* Data migration
-* Hosting configuration
-* Maintenance
-* Support
+* [ ] Dashboard loads
+* [ ] Product count is correct
+* [ ] Category count is correct
+* [ ] Stock quantity is correct
+* [ ] Low-stock count is correct
+* [ ] Out-of-stock count is correct
+* [ ] Inventory value is correct
+* [ ] Stock health displays correctly
 
-Commercial licensing and usage rights should be agreed upon separately with the developer.
+## Products
+
+* [ ] Products load
+* [ ] Products can be created
+* [ ] Products can be updated
+* [ ] Products can be deleted
+* [ ] Categories display correctly
+* [ ] Product prices display correctly
+* [ ] Stock quantities display correctly
+
+## Categories
+
+* [ ] Categories load
+* [ ] Categories can be created
+* [ ] Categories can be updated
+* [ ] Categories can be deleted
+
+## Stock
+
+* [ ] Stock movements load
+* [ ] Stock movements can be created
+* [ ] Product selection works
+* [ ] Quantities are validated
+* [ ] Inventory changes are reflected correctly
+
+## Users
+
+* [ ] Users load
+* [ ] Roles display correctly
+* [ ] Authorized role changes work
+
+## UI
+
+* [ ] Navigation works
+* [ ] Forms work
+* [ ] Buttons work
+* [ ] Loading states work
+* [ ] Error states work
+* [ ] Responsive layouts work
+* [ ] No major browser console errors exist
+
+---
+
+# Security
+
+The frontend does not connect directly to PostgreSQL.
+
+Database access is handled exclusively by the Laravel backend.
+
+Important principles:
+
+* Never commit `.env.local`
+* Never expose database credentials
+* Never expose Google OAuth secrets
+* Never expose mail credentials
+* Do not rely on frontend authorization alone
+* Backend authorization must enforce permissions
+* Production communication should use HTTPS
+
+---
+
+# Backend Repository
+
+The corresponding Laravel API is maintained separately.
+
+Repository:
+
+```text
+https://github.com/chima-008/inventory-project
+```
+
+Production API:
+
+```text
+https://inventory-api-utcf.onrender.com
+```
+
+---
+
+# Known Limitations
+
+The frontend depends on the Laravel API for:
+
+* Persistent data
+* Authentication
+* Authorization
+* Database operations
+* Inventory calculations
+* Email functionality
+* User management
+
+The frontend cannot function as a complete standalone inventory system without the backend API.
+
+---
+
+# Future Improvements
+
+Potential future improvements include:
+
+* Advanced search
+* Product filtering
+* Pagination
+* Bulk product operations
+* CSV import/export
+* Barcode scanning
+* Supplier management
+* Purchase orders
+* Sales orders
+* Inventory reports
+* Audit logs
+* Notifications
+* Automated low-stock alerts
+* Advanced analytics
+* Mobile-specific improvements
+
+---
+
+# Project Purpose
+
+This project demonstrates practical frontend development for a real business application.
+
+It demonstrates experience with:
+
+* Next.js
+* React
+* TypeScript
+* Tailwind CSS
+* REST API integration
+* Authentication
+* CRUD interfaces
+* Protected application routes
+* Role-based workflows
+* Responsive UI development
+* Business dashboard design
+* Full-stack architecture
+
+---
+
+# Author
+
+**Ojeh Chimamanda**
+
+Full-stack developer focused on building practical business applications, dashboards, APIs, and modern web systems.
+
+GitHub: **chima-008**
 
 ---
 
 # License
 
-No open-source license is granted by this repository unless a separate license file explicitly states otherwise.
+This project is intended for portfolio, demonstration, and commercial development purposes.
 
-All rights not expressly granted are reserved by the project owner.
+If distributed as a reusable template or commercial product, provide the applicable license and usage terms.
