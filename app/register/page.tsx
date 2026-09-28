@@ -10,7 +10,8 @@ export default function RegisterPage() {
   const [businessName, setBusinessName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [passwordConfirmation, setPasswordConfirmation] = useState('');
+  const [passwordConfirmation, setPasswordConfirmation] =
+    useState('');
 
   const [showPassword, setShowPassword] = useState(false);
   const [showPasswordConfirmation, setShowPasswordConfirmation] =
@@ -19,14 +20,18 @@ export default function RegisterPage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(
+    event: FormEvent<HTMLFormElement>
+  ) {
     event.preventDefault();
 
     setLoading(true);
     setError('');
 
     if (password.length < 8) {
-      setError('Password must be at least 8 characters long.');
+      setError(
+        'Password must be at least 8 characters long.'
+      );
       setLoading(false);
       return;
     }
@@ -56,36 +61,50 @@ export default function RegisterPage() {
       const data = await response.json();
 
       if (!response.ok) {
-    if (data.email_verification_required) {
-      router.replace(
-        `/verify-email?email=${encodeURIComponent(
-          data.email || email
-        )}`
-      );
+        if (data.email_verification_required) {
+          router.replace(
+            `/verify-email?email=${encodeURIComponent(
+              data.email || email
+            )}`
+          );
 
-      return;
-    }
+          return;
+        }
 
-    if (data.errors) {
-      const firstError = Object.values(data.errors)
-        .flat()
-        .find((message) => typeof message === 'string');
+        if (data.errors) {
+          const firstError = Object.values(data.errors)
+            .flat()
+            .find(
+              (message) =>
+                typeof message === 'string'
+            );
 
-      setError(
-        typeof firstError === 'string'
-          ? firstError
-          : data.message || 'Registration failed.'
-      );
-    } else {
-      setError(data.message || 'Registration failed.');
-    }
+          setError(
+            typeof firstError === 'string'
+              ? firstError
+              : data.message || 'Registration failed.'
+          );
+        } else {
+          setError(
+            data.message || 'Registration failed.'
+          );
+        }
 
-    return;
-  }
+        return;
+      }
 
-      router.replace(
-        `/verify-email?email=${encodeURIComponent(email)}`
-      );
+      /*
+      |--------------------------------------------------------------------------
+      | Successful registration
+      |--------------------------------------------------------------------------
+      |
+      | A newly registered user must verify their email before
+      | they can log in. Send them to the login page instead of
+      | attempting to establish a dashboard session here.
+      |
+      */
+
+      router.replace('/login?registered=true');
     } catch {
       setError(
         'Unable to connect to the server. Please try again.'
@@ -255,7 +274,7 @@ export default function RegisterPage() {
                   autoFocus
                   required
                   placeholder="John Doe"
-                  className="h-12 block w-full rounded-lg border border-slate-200 bg-white px-4 text-sm text-slate-950 shadow-sm outline-none transition placeholder:text-slate-400 hover:border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                  className="block h-12 w-full rounded-lg border border-slate-200 bg-white px-4 text-sm text-slate-950 shadow-sm outline-none transition placeholder:text-slate-400 hover:border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
                 />
               </div>
 
@@ -279,7 +298,7 @@ export default function RegisterPage() {
                   autoComplete="organization"
                   required
                   placeholder="Acme Store"
-                  className="h-12 block w-full rounded-lg border border-slate-200 bg-white px-4 text-sm text-slate-950 shadow-sm outline-none transition placeholder:text-slate-400 hover:border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                  className="block h-12 w-full rounded-lg border border-slate-200 bg-white px-4 text-sm text-slate-950 shadow-sm outline-none transition placeholder:text-slate-400 hover:border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
                 />
               </div>
 
@@ -303,7 +322,7 @@ export default function RegisterPage() {
                   autoComplete="email"
                   required
                   placeholder="you@example.com"
-                  className="h-12 block w-full rounded-lg border border-slate-200 bg-white px-4 text-sm text-slate-950 shadow-sm outline-none transition placeholder:text-slate-400 hover:border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                  className="block h-12 w-full rounded-lg border border-slate-200 bg-white px-4 text-sm text-slate-950 shadow-sm outline-none transition placeholder:text-slate-400 hover:border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
                 />
               </div>
 
@@ -320,7 +339,11 @@ export default function RegisterPage() {
                   <input
                     id="password"
                     name="password"
-                    type={showPassword ? 'text' : 'password'}
+                    type={
+                      showPassword
+                        ? 'text'
+                        : 'password'
+                    }
                     value={password}
                     onChange={(event) =>
                       setPassword(event.target.value)
@@ -329,13 +352,15 @@ export default function RegisterPage() {
                     required
                     minLength={8}
                     placeholder="At least 8 characters"
-                    className="h-12 block w-full rounded-lg border border-slate-200 bg-white px-4 pr-20 text-sm text-slate-950 shadow-sm outline-none transition placeholder:text-slate-400 hover:border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                    className="block h-12 w-full rounded-lg border border-slate-200 bg-white px-4 pr-20 text-sm text-slate-950 shadow-sm outline-none transition placeholder:text-slate-400 hover:border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
                   />
 
                   <button
                     type="button"
                     onClick={() =>
-                      setShowPassword((current) => !current)
+                      setShowPassword(
+                        (current) => !current
+                      )
                     }
                     aria-label={
                       showPassword
@@ -344,7 +369,9 @@ export default function RegisterPage() {
                     }
                     className="absolute inset-y-0 right-0 px-4 text-xs font-semibold text-slate-500 transition hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500"
                   >
-                    {showPassword ? 'Hide' : 'Show'}
+                    {showPassword
+                      ? 'Hide'
+                      : 'Show'}
                   </button>
                 </div>
 
@@ -373,13 +400,15 @@ export default function RegisterPage() {
                     }
                     value={passwordConfirmation}
                     onChange={(event) =>
-                      setPasswordConfirmation(event.target.value)
+                      setPasswordConfirmation(
+                        event.target.value
+                      )
                     }
                     autoComplete="new-password"
                     required
                     minLength={8}
                     placeholder="Enter your password again"
-                    className="h-12 block w-full rounded-lg border border-slate-200 bg-white px-4 pr-20 text-sm text-slate-950 shadow-sm outline-none transition placeholder:text-slate-400 hover:border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                    className="block h-12 w-full rounded-lg border border-slate-200 bg-white px-4 pr-20 text-sm text-slate-950 shadow-sm outline-none transition placeholder:text-slate-400 hover:border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
                   />
 
                   <button
@@ -396,7 +425,9 @@ export default function RegisterPage() {
                     }
                     className="absolute inset-y-0 right-0 px-4 text-xs font-semibold text-slate-500 transition hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500"
                   >
-                    {showPasswordConfirmation ? 'Hide' : 'Show'}
+                    {showPasswordConfirmation
+                      ? 'Hide'
+                      : 'Show'}
                   </button>
                 </div>
 
@@ -421,7 +452,9 @@ export default function RegisterPage() {
                 disabled={loading}
                 className="inline-flex h-12 w-full items-center justify-center rounded-lg bg-blue-600 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
               >
-                {loading ? 'Creating account...' : 'Create account'}
+                {loading
+                  ? 'Creating account...'
+                  : 'Create account'}
               </button>
             </form>
 
@@ -431,7 +464,9 @@ export default function RegisterPage() {
                 Already have an account?{' '}
                 <button
                   type="button"
-                  onClick={() => router.push('/login')}
+                  onClick={() =>
+                    router.push('/login')
+                  }
                   className="font-semibold text-blue-600 transition hover:text-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
                 >
                   Sign in
@@ -445,4 +480,3 @@ export default function RegisterPage() {
     </main>
   );
 }
-

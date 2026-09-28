@@ -366,7 +366,7 @@ export default function LoginPage() {
                     </svg>
 
                     <span>
-                      Continue with Google
+                      Sign in with Google
                     </span>
                   </>
                 )}
