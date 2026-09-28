@@ -7,7 +7,9 @@ export async function POST(request: Request) {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
     if (!apiUrl) {
-      console.error('NEXT_PUBLIC_API_URL is not configured.');
+      console.error(
+        'Registration error: NEXT_PUBLIC_API_URL is not configured.'
+      );
 
       return NextResponse.json(
         {
@@ -19,39 +21,75 @@ export async function POST(request: Request) {
       );
     }
 
-    const response = await fetch(`${apiUrl}/register`, {
-      method: 'POST',
-      headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(body),
-    });
+    const normalizedApiUrl = apiUrl.replace(/\/+$/, '');
+
+    console.log(
+      'Registration request started:',
+      `${normalizedApiUrl}/register`
+    );
+
+    const response = await fetch(
+      `${normalizedApiUrl}/register`,
+      {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(body),
+        cache: 'no-store',
+      }
+    );
 
     const text = await response.text();
 
-    let data: unknown;
+    let data: any;
 
     try {
       data = JSON.parse(text);
     } catch {
       console.error(
-        'Inventory API returned a non-JSON response:',
-        text
+        'Registration upstream returned non-JSON response:',
+        {
+          status: response.status,
+          statusText: response.statusText,
+          body: text,
+        }
       );
 
-      data = {
-        message:
-          response.statusText ||
-          'The inventory API returned an unexpected response.',
-      };
+      return NextResponse.json(
+        {
+          message:
+            response.statusText ||
+            'The inventory API returned an unexpected response.',
+        },
+        {
+          status: response.status || 502,
+        }
+      );
     }
+
+    console.log(
+      'Registration upstream response:',
+      {
+        status: response.status,
+        ok: response.ok,
+        message: data?.message,
+        email_verification_required:
+          data?.email_verification_required,
+        verification_email_sent:
+          data?.verification_email_sent,
+      }
+    );
 
     return NextResponse.json(data, {
       status: response.status,
     });
   } catch (error) {
-    console.error('Registration API error:', error);
+    console.error(
+      'Registration API error:',
+      error
+    );
 
     return NextResponse.json(
       {
